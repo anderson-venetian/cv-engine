@@ -1,96 +1,45 @@
-#include <print>
 #include <memory>
 #include <filesystem>
-#include <cvengine/core/ports/i_data_repository.hpp>
-#include <cvengine/core/ports/i_theme_repository.hpp>
-#include <cvengine/core/ports/i_template_engine.hpp>
-#include <cvengine/core/ports/i_renderer.hpp>
-#include <cvengine/core/ports/i_compiler.hpp>
+
+#include <cvengine/application/use_cases/generate_cv_use_case.hpp>
+#include <cvengine/presentation/cli/cli_application.hpp>
 #include <cvengine/infrastructure/persistence/json_data_repository.hpp>
 #include <cvengine/infrastructure/persistence/toml_theme_repository.hpp>
 #include <cvengine/infrastructure/rendering/inja_template_engine.hpp>
 #include <cvengine/infrastructure/rendering/latex_renderer.hpp>
 #include <cvengine/infrastructure/compilation/pdflatex_compiler.hpp>
 
-namespace fs    = std::filesystem;
-namespace ports = cvengine::core::ports;
-namespace dom   = cvengine::core::domain;
-namespace persistence  = cvengine::infrastructure::persistence;
-namespace rendering    = cvengine::infrastructure::rendering;
-namespace compilation  = cvengine::infrastructure::compilation;
+// Composition root: unico lugar donde se cablea el grafo de dependencias.
+// Toda la logica de negocio vive en application; toda la I/O en infrastructure.
+auto main(int argc, char** argv) -> int {
+    namespace fs    = std::filesystem;
+    namespace infra = cvengine::infrastructure;
+    namespace app   = cvengine::application;
+    namespace pres  = cvengine::presentation;
 
-auto main() -> int {
-    std::println("cv-engine v2.0.0 — Fase 6: flujo end-to-end (JSON+TOML → PDF)");
-
-    // ----- Configuración de rutas -----
     auto data_dir      = fs::path{"config"} / "data";
     auto theme_dir     = fs::path{"config"} / "themes";
     auto templates_dir = fs::path{"config"} / "templates";
-    auto output_dir    = fs::path{"output"};
 
-    // ----- Composition root -----
-    std::unique_ptr<ports::IDataRepository> data_repo =
-        std::make_unique<persistence::JsonDataRepository>(data_dir);
+    auto data_repo = std::make_shared<infra::persistence::JsonDataRepository>(data_dir);
+    auto theme_repo = std::make_shared<infra::persistence::TomlThemeRepository>(theme_dir);
+    auto template_engine = std::make_shared<infra::rendering::InjaTemplateEngine>(templates_dir);
+    auto renderer = std::make_shared<infra::rendering::LatexRenderer>(template_engine);
 
-    std::unique_ptr<ports::IThemeRepository> theme_repo =
-        std::make_unique<persistence::TomlThemeRepository>(theme_dir);
+    // El nombre del archivo PDF se deriva del data_identifier (ej: "cv_pedro" -> "cv_pedro.pdf").
+    // Lo cierto: por ahora hardcodeamos "cv_pedro"; en una iteracion futura
+    // el compiler aceptara el nombre desde el request.
+    auto compiler = std::make_shared<infra::compilation::PdfLatexCompiler>(
+        "",          // pdflatex autodetect
+        "cv_pedro",  // base filename - TODO: derivarlo del request
+        true,        // cleanup
+        2            // passes
+    );
 
-    std::shared_ptr<ports::ITemplateEngine> template_engine =
-        std::make_shared<rendering::InjaTemplateEngine>(templates_dir);
+    auto use_case = std::make_shared<app::use_cases::GenerateCvUseCase>(
+        data_repo, theme_repo, renderer, compiler
+    );
 
-    std::unique_ptr<ports::IRenderer> renderer =
-        std::make_unique<rendering::LatexRenderer>(template_engine);
-
-    std::unique_ptr<ports::ICompiler> compiler =
-        std::make_unique<compilation::PdfLatexCompiler>(
-            /* executable_path     */ "",          // autodetect en PATH
-            /* base_filename       */ "cv_pedro",
-            /* cleanup_auxiliaries */ true,
-            /* pass_count          */ 2
-        );
-
-    // ----- Fase 1: Cargar CV -----
-    auto cv_r = data_repo->load("cv_pedro");
-    if (!cv_r) {
-        std::println("[FAIL] DataRepository: {}", cv_r.error().message);
-        return 1;
-    }
-    std::println("[OK] CV cargado: {}", cv_r->contact().name());
-
-    // ----- Fase 2: Cargar tema -----
-    auto theme_r = theme_repo->load("minimal");
-    if (!theme_r) {
-        std::println("[FAIL] ThemeRepository: {}", theme_r.error().message);
-        return 1;
-    }
-    std::println("[OK] Tema cargado: {}", theme_r->name());
-
-    // ----- Fase 3: Renderizar LaTeX -----
-    auto doc_r = renderer->render(*cv_r, *theme_r);
-    if (!doc_r) {
-        std::println("[FAIL] Renderer: {}", doc_r.error().message);
-        return 1;
-    }
-    std::println("[OK] LaTeX renderizado: {} chars", doc_r->content().size());
-
-    // ----- Fase 4: Compilar a PDF -----
-    std::println("[..] Compilando con pdflatex (2 pasadas)...");
-    auto pdf_r = compiler->compile(*doc_r, output_dir);
-    if (!pdf_r) {
-        std::println("[FAIL] Compiler: {}", pdf_r.error().message);
-        return 1;
-    }
-
-    std::println("[OK] PDF generado: {}", pdf_r->string());
-
-    // ----- Resumen -----
-    std::error_code ec;
-    auto size = fs::file_size(*pdf_r, ec);
-    if (!ec) {
-        std::println("[OK] Tamaño: {} bytes", size);
-    }
-
-    std::println("\n✓ Fase 6 completa. Flujo end-to-end operativo.");
-    std::println("  Para regenerar: editar config/ → ./build/debug/bin/cv-engine.exe");
-    return 0;
+    pres::cli::CliApplication cli{use_case};
+    return cli.run(argc, argv);
 }

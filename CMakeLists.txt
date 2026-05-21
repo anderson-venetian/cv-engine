@@ -46,6 +46,16 @@ if(TARGET inja)
     endif()
 endif()
 
+CPMAddPackage(
+    NAME CLI11
+    GITHUB_REPOSITORY CLIUtils/CLI11
+    VERSION 2.4.2
+    OPTIONS
+        "CLI11_BUILD_TESTS OFF"
+        "CLI11_BUILD_EXAMPLES OFF"
+        "CLI11_BUILD_DOCS OFF"
+)
+
 # ===== Capa core (dominio + ports + common) =====
 add_library(cvengine-core STATIC
     src/core/domain/period.cpp
@@ -73,6 +83,24 @@ target_compile_options(cvengine-core PRIVATE
     -Wcast-align -Wunused
     -Woverloaded-virtual -Wnull-dereference
     -Wdouble-promotion
+)
+
+# ===== Capa application (use cases) =====
+add_library(cvengine-application STATIC
+    src/application/use_cases/generate_cv_use_case.cpp
+)
+
+target_include_directories(cvengine-application PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+target_link_libraries(cvengine-application
+    PUBLIC cvengine-core
+)
+
+target_compile_options(cvengine-application PRIVATE
+    -Wall -Wextra -Wpedantic
+    -Wshadow -Wconversion
 )
 
 # ===== Capa infrastructure =====
@@ -103,14 +131,38 @@ target_compile_options(cvengine-infrastructure PRIVATE
     -Wshadow -Wconversion
 )
 
-# ===== Ejecutable principal =====
+# ===== Capa presentation (CLI) =====
+add_library(cvengine-presentation STATIC
+    src/presentation/cli/cli_application.cpp
+)
+
+target_include_directories(cvengine-presentation PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+target_link_libraries(cvengine-presentation
+    PUBLIC
+        cvengine-core
+        cvengine-application
+    PRIVATE
+        CLI11::CLI11
+)
+
+target_compile_options(cvengine-presentation PRIVATE
+    -Wall -Wextra -Wpedantic
+    -Wshadow -Wconversion
+)
+
+# ===== Ejecutable principal (composition root) =====
 add_executable(cv-engine
     src/main.cpp
 )
 
 target_link_libraries(cv-engine PRIVATE
     cvengine-core
+    cvengine-application
     cvengine-infrastructure
+    cvengine-presentation
 )
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0")
