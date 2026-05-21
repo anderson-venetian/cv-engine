@@ -1,0 +1,41 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 28,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "mingw-debug",
+            "displayName": "MinGW GCC 16 — Debug",
+            "description": "Build de desarrollo con símbolos y warnings estrictos",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/debug",
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "C:/msys64/mingw64/bin/g++.exe",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "mingw-release",
+            "displayName": "MinGW GCC 16 — Release",
+            "description": "Build optimizado para distribución",
+            "inherits": "mingw-debug",
+            "binaryDir": "${sourceDir}/build/release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "debug",
+            "configurePreset": "mingw-debug"
+        },
+        {
+            "name": "release",
+            "configurePreset": "mingw-release"
+        }
+    ]
+}

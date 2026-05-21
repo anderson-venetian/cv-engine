@@ -1,0 +1,40 @@
+# Build artifacts
+build/
+out/
+output/
+cmake-build-*/
+
+# IDE
+.vs/
+.idea/
+*.user
+*.code-workspace
+
+# C++ compilation artifacts
+*.o
+*.obj
+*.ilk
+*.pdb
+*.exe
+*.exp
+*.lib
+*.a
+*.so
+*.dll
+compile_commands.json
+
+# LaTeX artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.bbl
+*.blg
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini

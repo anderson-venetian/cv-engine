@@ -1,0 +1,32 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "CMake: configure (debug)",
+            "type": "shell",
+            "command": "cmake",
+            "args": ["--preset", "mingw-debug"],
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "CMake: build (debug)",
+            "type": "shell",
+            "command": "cmake",
+            "args": ["--build", "build/debug"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Run cv-engine",
+            "type": "shell",
+            "command": "./build/debug/bin/cv-engine.exe",
+            "dependsOn": "CMake: build (debug)",
+            "group": "test",
+            "problemMatcher": []
+        }
+    ]
+}
