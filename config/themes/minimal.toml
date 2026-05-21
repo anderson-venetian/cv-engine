@@ -1,0 +1,34 @@
+[meta]
+name    = "minimal"
+version = "1.0.0"
+
+[page]
+size          = "a4"
+orientation   = "portrait"
+margin_top    = "2.1cm"
+margin_bottom = "2.1cm"
+margin_left   = "1.9cm"
+margin_right  = "1.9cm"
+
+[typography]
+base_size      = "10.5pt"
+font_family    = "lmodern"
+line_height    = "1.15"
+heading_weight = "bold"
+
+[colors]
+primary   = "#1a1a1a"
+secondary = "#4a4a4a"
+accent    = "#0066cc"
+divider   = "#cccccc"
+
+[dividers]
+style       = "solid"
+thickness   = "0.4pt"
+space_above = "4pt"
+space_below = "6pt"
+
+[sections]
+title_case    = "upper"
+title_bold    = true
+space_between = "6pt"

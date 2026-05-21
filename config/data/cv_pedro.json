@@ -1,0 +1,77 @@
+{
+  "schema_version": "2.0",
+  "language": "es",
+  "personal": {
+    "name": "Pedro Espinoza Trujillo",
+    "location": "Lima, Perú",
+    "phone": "917 672 598",
+    "email": "pedro.espinozat@istpargentina.edu.pe"
+  },
+  "profile": "Técnico en Computación e Informática especializado en Service Desk y Help Desk N1/N2 en entornos BPO de alta demanda. Gestioné más de 120 tickets mensuales con cumplimiento de SLA del 98.5% y MTTR de 15 minutos. Elevé el CSAT en 20 puntos porcentuales, reduje escalamientos evitables en 48% y disminuí el churn bancario en 25%. Certificado en ITIL 4 Foundation y Google IT Support Professional.",
+  "skills": {
+    "Marcos y métricas": "ITIL 4 Foundation, gestión de tickets y SLA, escalamiento L2/L3, CSAT, AHT, FCR",
+    "Plataformas y herramientas": "CRM y ticketing systems, bases de conocimiento, helpdesk multicanal",
+    "Infraestructura y sistemas": "Windows 10/11, networking básico, soporte N1 y N2, diagnóstico",
+    "Competencias transversales": "Documentación técnica, onboarding de agentes, trabajo remoto"
+  },
+  "experiences": [
+    {
+      "position": "Operador de Centro de Cómputo",
+      "organization": "ONPE",
+      "location": "Lima, Perú",
+      "period": "Mar 2026 — Abr 2026",
+      "achievements": [
+        "Operé y brindé soporte técnico al centro de cómputo durante el proceso electoral.",
+        "Brindé soporte N1/N2 y resolución rápida de incidentes en entorno regulado."
+      ]
+    },
+    {
+      "position": "Asesor de Soporte al Cliente",
+      "organization": "Concentrix BPO Consulting Perú S.A.C.",
+      "location": "Lima, Perú",
+      "period": "Ago 2025 — Ene 2026",
+      "achievements": [
+        "Elevé el CSAT del equipo en 20 puntos porcentuales mediante resolución proactiva.",
+        "Optimicé el uso de CRM y bases de conocimiento consolidando plantillas y flujos.",
+        "Lideré capacitaciones para nuevos asesores sobre estándares de calidad y uso del CRM."
+      ]
+    },
+    {
+      "position": "Service Desk Agent",
+      "organization": "Securitec Perú S.A.C.",
+      "location": "Lima, Perú",
+      "period": "Ene 2025 — Jul 2025",
+      "achievements": [
+        "Resolví más de 120 tickets mensuales con cumplimiento de SLA del 98.5% y MTTR de 15 minutos.",
+        "Implementé estrategia de optimización del AHT para prevenir backlog en picos.",
+        "Rediseñé la base de conocimiento con 20 artículos y 14 playbooks actualizados.",
+        "Coordiné con equipos L2/L3 en revisiones operativas periódicas."
+      ]
+    },
+    {
+      "position": "Gestor de Fidelización Bancaria",
+      "organization": "Servicios de Call Center del Perú S.A.",
+      "location": "Lima, Perú",
+      "period": "Jul 2024 — Dic 2024",
+      "achievements": [
+        "Lideré segmentación de cartera por riesgo de churn con reducción de fuga del 25%.",
+        "Ejecuté seguimiento multicanal garantizando trazabilidad completa en CRM."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Profesional Técnico en Computación e Informática",
+      "institution": "Instituto de Educación Superior Tecnológico Público Argentina",
+      "location": "Lima, Perú",
+      "completion_date": "Dic 2020"
+    }
+  ],
+  "certifications": [
+    { "name": "ITIL 4 Foundation",                      "issuer": "Logical Operation",         "date": "Ene 2026" },
+    { "name": "Google IT Support Professional",          "issuer": "Google / Coursera",         "date": "Feb 2026" },
+    { "name": "Windows 11 Professional",                 "issuer": "Microsoft / Coursera",      "date": "Ene 2026" },
+    { "name": "Microsoft Excel, Word y PowerPoint",      "issuer": "Microsoft / Coursera",      "date": "Feb 2026" },
+    { "name": "Liderazgo en equipos de trabajo",         "issuer": "Universidad de Illinois",   "date": "Feb 2026" }
+  ]
+}

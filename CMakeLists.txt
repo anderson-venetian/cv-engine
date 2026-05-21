@@ -12,7 +12,23 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# ----- Librería del dominio + ports (capa interna, sin deps externas) -----
+# ===== Dependencias externas vía CPM =====
+include(${CMAKE_SOURCE_DIR}/cmake/CPM.cmake)
+
+CPMAddPackage(
+    NAME nlohmann_json
+    VERSION 3.11.3
+    URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+    OPTIONS "JSON_BuildTests OFF"
+)
+
+CPMAddPackage(
+    NAME tomlplusplus
+    GITHUB_REPOSITORY marzer/tomlplusplus
+    VERSION 3.4.0
+)
+
+# ===== Capa core (dominio + ports, sin deps externas) =====
 add_library(cvengine-core STATIC
     src/core/domain/period.cpp
     src/core/domain/contact.cpp
@@ -40,12 +56,38 @@ target_compile_options(cvengine-core PRIVATE
     -Wdouble-promotion
 )
 
-# ----- Ejecutable principal -----
+# ===== Capa infrastructure (adapters) =====
+add_library(cvengine-infrastructure STATIC
+    src/infrastructure/persistence/json_data_repository.cpp
+    src/infrastructure/persistence/toml_theme_repository.cpp
+)
+
+target_include_directories(cvengine-infrastructure PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+target_link_libraries(cvengine-infrastructure
+    PUBLIC
+        cvengine-core
+    PRIVATE
+        nlohmann_json::nlohmann_json
+        tomlplusplus::tomlplusplus
+)
+
+target_compile_options(cvengine-infrastructure PRIVATE
+    -Wall -Wextra -Wpedantic
+    -Wshadow -Wconversion
+)
+
+# ===== Ejecutable principal =====
 add_executable(cv-engine
     src/main.cpp
 )
 
-target_link_libraries(cv-engine PRIVATE cvengine-core)
+target_link_libraries(cv-engine PRIVATE
+    cvengine-core
+    cvengine-infrastructure
+)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0")
     target_link_libraries(cv-engine PRIVATE stdc++exp)

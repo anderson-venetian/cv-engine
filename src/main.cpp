@@ -1,122 +1,73 @@
 #include <print>
-#include <vector>
 #include <memory>
-#include <cvengine/core/domain/cv.hpp>
-#include <cvengine/core/domain/theme.hpp>
-#include <cvengine/core/domain/rendered_document.hpp>
+#include <filesystem>
 #include <cvengine/core/ports/i_data_repository.hpp>
 #include <cvengine/core/ports/i_theme_repository.hpp>
+#include <cvengine/infrastructure/persistence/json_data_repository.hpp>
+#include <cvengine/infrastructure/persistence/toml_theme_repository.hpp>
 
-namespace dom   = cvengine::core::domain;
+namespace fs    = std::filesystem;
 namespace ports = cvengine::core::ports;
-namespace common = cvengine::common;
-
-// ----- Mock inline de IDataRepository: devuelve un CV hardcodeado -----
-class InMemoryDataRepository final : public ports::IDataRepository {
-public:
-    [[nodiscard]] auto load(std::string_view /*identifier*/) const
-        -> common::Result<dom::Cv> override {
-
-        auto contact = dom::Contact::create(
-            "Pedro Espinoza Trujillo", "Lima, Perú",
-            "917 672 598", "pedro.espinozat@istpargentina.edu.pe"
-        );
-        if (!contact) return std::unexpected{contact.error()};
-
-        auto profile = dom::ProfessionalProfile::create(
-            "Técnico en Computación e Informática especializado en Service Desk "
-            "y Help Desk N1/N2 en entornos BPO de alta demanda."
-        );
-        if (!profile) return std::unexpected{profile.error()};
-
-        auto period = dom::Period::create("Mar 2026 — Abr 2026");
-        if (!period) return std::unexpected{period.error()};
-
-        auto ach = dom::Achievement::create("Operé el centro de cómputo en proceso electoral.");
-        if (!ach) return std::unexpected{ach.error()};
-
-        std::vector<dom::Achievement> achievements;
-        achievements.push_back(*std::move(ach));
-
-        auto exp = dom::Experience::create(
-            "Operador de Centro de Cómputo", "ONPE", "Lima, Perú",
-            *std::move(period), std::move(achievements)
-        );
-        if (!exp) return std::unexpected{exp.error()};
-
-        auto edu = dom::Education::create(
-            "Profesional Técnico en Computación e Informática",
-            "IESTP Argentina", "Lima, Perú", "Dic 2020"
-        );
-        if (!edu) return std::unexpected{edu.error()};
-
-        std::vector<dom::Experience> experiences;
-        experiences.push_back(*std::move(exp));
-        std::vector<dom::Education> education_list;
-        education_list.push_back(*std::move(edu));
-
-        return dom::Cv::create(
-            *std::move(contact), *std::move(profile),
-            {}, std::move(experiences), std::move(education_list), {}
-        );
-    }
-};
-
-// ----- Mock inline de IThemeRepository: devuelve un tema mínimo -----
-class InMemoryThemeRepository final : public ports::IThemeRepository {
-public:
-    [[nodiscard]] auto load(std::string_view name) const
-        -> common::Result<dom::Theme> override {
-        dom::Theme::PropertyMap props{
-            {"page.size",        "a4"},
-            {"page.margin_top",  "2.1cm"},
-            {"typography.base_size", "10.5pt"},
-            {"colors.accent",    "#0066cc"}
-        };
-        return dom::Theme::create(name, std::move(props));
-    }
-};
+namespace infra = cvengine::infrastructure::persistence;
 
 auto main() -> int {
-    std::println("cv-engine v2.0.0 — Fase 3: smoke test de ports");
+    std::println("cv-engine v2.0.0 — Fase 4: adapters JSON + TOML");
 
-    // Trabajamos a través de las interfaces, no de las clases concretas.
+    // Resolución de paths: relativo al CWD donde se ejecuta el binario.
+    // Convención: ejecutamos desde la raíz del proyecto.
+    auto data_dir  = fs::path{"config"} / "data";
+    auto theme_dir = fs::path{"config"} / "themes";
+
+    std::println("[INFO] data_dir  = {}", data_dir.string());
+    std::println("[INFO] theme_dir = {}", theme_dir.string());
+
+    // Composition root: programamos contra interfaces, no contra implementaciones.
     std::unique_ptr<ports::IDataRepository> data_repo =
-        std::make_unique<InMemoryDataRepository>();
+        std::make_unique<infra::JsonDataRepository>(data_dir);
     std::unique_ptr<ports::IThemeRepository> theme_repo =
-        std::make_unique<InMemoryThemeRepository>();
+        std::make_unique<infra::TomlThemeRepository>(theme_dir);
 
+    // ----- Carga del CV -----
     auto cv_r = data_repo->load("cv_pedro");
     if (!cv_r) {
-        std::println("[FAIL] IDataRepository::load: {}", cv_r.error().message);
+        std::println("[FAIL] DataRepository: {}", cv_r.error().message);
         return 1;
     }
-    std::println("[OK] IDataRepository operativo. CV de: {}", cv_r->contact().name());
+    const auto& cv = *cv_r;
+    std::println("[OK] CV cargado: {}", cv.contact().name());
+    std::println("[OK] Email: {}", cv.contact().email());
+    std::println("[OK] Profile: {} chars", cv.profile().text().size());
+    std::println("[OK] Skill groups: {}", cv.skills().size());
+    std::println("[OK] Experiences: {}", cv.experiences().size());
+    for (const auto& exp : cv.experiences()) {
+        std::println("       · {} @ {} ({} achievements)",
+                     exp.position(), exp.organization(), exp.achievements().size());
+    }
+    std::println("[OK] Education: {} entries", cv.education().size());
+    std::println("[OK] Certifications: {} entries", cv.certifications().size());
 
+    // ----- Carga del tema -----
     auto theme_r = theme_repo->load("minimal");
     if (!theme_r) {
-        std::println("[FAIL] IThemeRepository::load: {}", theme_r.error().message);
+        std::println("[FAIL] ThemeRepository: {}", theme_r.error().message);
         return 1;
     }
-    std::println("[OK] IThemeRepository operativo. Tema: {}", theme_r->name());
-    std::println("[OK] Propiedades del tema: {}", theme_r->properties().size());
-    std::println("[OK] theme.get(\"colors.accent\") = {}", theme_r->get("colors.accent"));
-    std::println("[OK] theme.get(\"inexistente\", \"fallback\") = {}",
-                 theme_r->get("inexistente", "fallback"));
+    const auto& theme = *theme_r;
+    std::println("[OK] Theme cargado: {}", theme.name());
+    std::println("[OK] Properties: {}", theme.properties().size());
+    std::println("       · page.size       = {}", theme.get("page.size"));
+    std::println("       · typography.base_size = {}", theme.get("typography.base_size"));
+    std::println("       · colors.accent   = {}", theme.get("colors.accent"));
+    std::println("       · dividers.style  = {}", theme.get("dividers.style"));
 
-    // Verificar RenderedDocument
-    auto doc_r = dom::RenderedDocument::create(
-        dom::RenderedDocument::Format::Latex,
-        "\\documentclass{article}\\begin{document}Hello\\end{document}"
-    );
-    if (!doc_r) {
-        std::println("[FAIL] RenderedDocument: {}", doc_r.error().message);
+    // ----- Test negativo: archivo inexistente -----
+    auto missing = data_repo->load("no_existe");
+    if (missing) {
+        std::println("[FAIL] DataRepository aceptó archivo inexistente");
         return 1;
     }
-    std::println("[OK] RenderedDocument: format={}, content_size={}",
-                 dom::RenderedDocument::format_extension(doc_r->format()),
-                 doc_r->content().size());
+    std::println("[OK] Validación de archivo inexistente: {}", missing.error().message);
 
-    std::println("\n✓ Fase 3 completa. Ports definidos y verificados con mocks.");
+    std::println("\n✓ Fase 4 completa. Adapters operativos.");
     return 0;
 }
