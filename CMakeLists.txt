@@ -12,8 +12,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# ----- Librería del dominio (capa interna, sin deps externas) -----
-add_library(cvengine-domain STATIC
+# ----- Librería del dominio + ports (capa interna, sin deps externas) -----
+add_library(cvengine-core STATIC
     src/core/domain/period.cpp
     src/core/domain/contact.cpp
     src/core/domain/achievement.cpp
@@ -22,14 +22,16 @@ add_library(cvengine-domain STATIC
     src/core/domain/certification.cpp
     src/core/domain/skill_group.cpp
     src/core/domain/professional_profile.cpp
+    src/core/domain/theme.cpp
+    src/core/domain/rendered_document.cpp
     src/core/domain/cv.cpp
 )
 
-target_include_directories(cvengine-domain PUBLIC
+target_include_directories(cvengine-core PUBLIC
     ${CMAKE_SOURCE_DIR}/include
 )
 
-target_compile_options(cvengine-domain PRIVATE
+target_compile_options(cvengine-core PRIVATE
     -Wall -Wextra -Wpedantic
     -Wshadow -Wconversion
     -Wnon-virtual-dtor -Wold-style-cast
@@ -43,9 +45,7 @@ add_executable(cv-engine
     src/main.cpp
 )
 
-target_link_libraries(cv-engine PRIVATE
-    cvengine-domain
-)
+target_link_libraries(cv-engine PRIVATE cvengine-core)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0")
     target_link_libraries(cv-engine PRIVATE stdc++exp)
