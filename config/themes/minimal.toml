@@ -11,7 +11,7 @@ margin_left   = "1.9cm"
 margin_right  = "1.9cm"
 
 [typography]
-base_size      = "10.5pt"
+base_size      = "11pt"
 font_family    = "lmodern"
 line_height    = "1.15"
 heading_weight = "bold"

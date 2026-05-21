@@ -1,0 +1,84 @@
+\documentclass[(( theme.properties.typography.base_size )),a4paper]{article}
+
+\usepackage[top=(( theme.properties.page.margin_top )),bottom=(( theme.properties.page.margin_bottom )),left=(( theme.properties.page.margin_left )),right=(( theme.properties.page.margin_right ))]{geometry}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\hypersetup{colorlinks=false, pdfborder={0 0 0}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlist[itemize]{leftmargin=*, itemsep=2pt, topsep=2pt, parsep=0pt}
+
+\pagestyle{empty}
+
+\begin{document}
+
+% ===== Encabezado =====
+{\Large\bfseries (( cv.personal.name ))}
+\hfill
+{\small (( cv.personal.location )) \,|\, (( cv.personal.phone )) \,|\, (( cv.personal.email ))}
+
+\vspace{2pt}
+\rule{\textwidth}{(( theme.properties.dividers.thickness ))}
+
+% ===== Perfil profesional =====
+\vspace{6pt}
+{\bfseries PERFIL PROFESIONAL}
+
+(( cv.profile ))
+
+% ===== Habilidades técnicas =====
+## if length(cv.skills) > 0 ##
+\vspace{6pt}
+{\bfseries HABILIDADES TÉCNICAS}
+
+## for skill in cv.skills ##
+{\bfseries (( skill.label ))}: (( skill.content ))\\
+## endfor ##
+## endif ##
+
+% ===== Experiencia profesional =====
+\vspace{6pt}
+{\bfseries EXPERIENCIA PROFESIONAL}
+
+## for exp in cv.experiences ##
+\vspace{4pt}
+{\bfseries (( exp.position ))} \hfill {\small (( exp.period ))}\\
+{\small (( exp.organization )) \,|\, (( exp.location ))}
+
+\begin{itemize}
+## for ach in exp.achievements ##
+  \item (( ach ))
+## endfor ##
+\end{itemize}
+## endfor ##
+
+% ===== Educación =====
+\vspace{6pt}
+{\bfseries EDUCACIÓN}
+
+## for edu in cv.education ##
+\noindent\begin{tabularx}{\textwidth}{@{}X r@{}}
+\bfseries (( edu.degree )) \newline {\small (( edu.institution )), (( edu.location ))} & {\small (( edu.completion_date ))}\\
+\end{tabularx}
+## endfor ##
+
+% ===== Certificaciones =====
+## if length(cv.certifications) > 0 ##
+\vspace{6pt}
+{\bfseries CERTIFICACIONES}
+
+\noindent\begin{tabularx}{\textwidth}{@{}X l r@{}}
+## for cert in cv.certifications ##
+\bfseries (( cert.name )) & {\small (( cert.issuer ))} & {\small (( cert.date ))}\\
+## endfor ##
+\end{tabularx}
+## endif ##
+
+\end{document}

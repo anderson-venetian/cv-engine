@@ -28,7 +28,27 @@ CPMAddPackage(
     VERSION 3.4.0
 )
 
-# ===== Capa core (dominio + ports, sin deps externas) =====
+CPMAddPackage(
+    NAME inja
+    GITHUB_REPOSITORY pantor/inja
+    VERSION 3.4.0
+    OPTIONS
+        "INJA_USE_EMBEDDED_JSON OFF"
+        "INJA_BUILD_TESTS OFF"
+        "BUILD_BENCHMARK OFF"
+)
+
+# Marcamos los headers de inja como sistema para silenciar
+# warnings ajenos a nuestro código (Wshadow, Wconversion).
+if(TARGET inja)
+    get_target_property(_inja_inc inja INTERFACE_INCLUDE_DIRECTORIES)
+    if(_inja_inc)
+        set_target_properties(inja PROPERTIES
+            INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${_inja_inc}")
+    endif()
+endif()
+
+# ===== Capa core =====
 add_library(cvengine-core STATIC
     src/core/domain/period.cpp
     src/core/domain/contact.cpp
@@ -56,10 +76,13 @@ target_compile_options(cvengine-core PRIVATE
     -Wdouble-promotion
 )
 
-# ===== Capa infrastructure (adapters) =====
+# ===== Capa infrastructure =====
 add_library(cvengine-infrastructure STATIC
     src/infrastructure/persistence/json_data_repository.cpp
     src/infrastructure/persistence/toml_theme_repository.cpp
+    src/infrastructure/rendering/inja_template_engine.cpp
+    src/infrastructure/rendering/latex_renderer.cpp
+    src/infrastructure/rendering/latex_escape.cpp
 )
 
 target_include_directories(cvengine-infrastructure PUBLIC
@@ -72,6 +95,7 @@ target_link_libraries(cvengine-infrastructure
     PRIVATE
         nlohmann_json::nlohmann_json
         tomlplusplus::tomlplusplus
+        inja
 )
 
 target_compile_options(cvengine-infrastructure PRIVATE
