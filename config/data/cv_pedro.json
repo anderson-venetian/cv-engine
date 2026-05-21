@@ -1,11 +1,18 @@
 {
-  "schema_version": "2.0",
+  "schema_version": "2.2",
   "language": "es",
   "personal": {
     "name": "Pedro Espinoza Trujillo",
     "location": "Lima, Perú",
     "phone": "917 672 598",
-    "email": "pedro.espinozat@istpargentina.edu.pe"
+    "email": "pedro.espinozat@istpargentina.edu.pe",
+    "channels": [
+      {
+        "type": "whatsapp",
+        "label": "WhatsApp",
+        "value": "51917672598"
+      }
+    ]
   },
   "profile": "Técnico en Computación e Informática especializado en Service Desk y Help Desk N1/N2 en entornos BPO de alta demanda. Gestioné más de 120 tickets mensuales con cumplimiento de SLA del 98.5% y MTTR de 15 minutos. Elevé el CSAT en 20 puntos porcentuales, reduje escalamientos evitables en 48% y disminuí el churn bancario en 25%. Certificado en ITIL 4 Foundation y Google IT Support Professional.",
   "skills": {

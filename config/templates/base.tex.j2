@@ -9,7 +9,7 @@
 \usepackage{enumitem}
 \usepackage{tabularx}
 \usepackage{hyperref}
-\hypersetup{colorlinks=false, pdfborder={0 0 0}}
+\hypersetup{colorlinks=false, pdfborder={0 0 0}, urlbordercolor={1 1 1}}
 
 \linespread{(( theme.properties.typography.line_height ))}
 
@@ -24,7 +24,13 @@
 % ===== Encabezado =====
 {\(( theme.properties.typography.name_size_scale ))\bfseries (( cv.personal.name ))}
 \hfill
-{\small (( cv.personal.location )) \,|\, (( cv.personal.phone )) \,|\, (( cv.personal.email ))}
+{\small (( cv.personal.location )) \,|\,
+## for ch in cv.personal.channels ##
+## if ch.type == "whatsapp" ##
+\href{(( ch.url ))}{(( cv.personal.phone ))}
+## endif ##
+## endfor ##
+ \,|\, \href{mailto:(( cv.personal.email_raw ))}{(( cv.personal.email ))}}
 
 \vspace{2pt}
 \rule{\textwidth}{(( theme.properties.dividers.thickness ))}

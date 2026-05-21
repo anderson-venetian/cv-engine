@@ -14,8 +14,6 @@ namespace dom = core::domain;
 using common::ErrorCode;
 using common::make_error;
 
-// ----- Helpers de extracción segura -----
-
 auto get_string(const json& obj, const char* key) -> common::Result<std::string> {
     if (!obj.contains(key)) {
         std::ostringstream msg;
@@ -37,7 +35,28 @@ auto get_string_or(const json& obj, const char* key, std::string_view fallback) 
     return std::string{fallback};
 }
 
-// ----- Builders de entidades -----
+auto build_extra_channels(const json& personal) -> common::Result<std::vector<dom::ContactChannel>> {
+    std::vector<dom::ContactChannel> result;
+
+    if (!personal.contains("channels") || !personal["channels"].is_array()) {
+        return result;
+    }
+
+    for (const auto& ch_json : personal["channels"]) {
+        auto type_str = get_string(ch_json, "type");
+        auto label    = get_string(ch_json, "label");
+        auto value    = get_string(ch_json, "value");
+        if (!type_str) return std::unexpected{type_str.error()};
+        if (!label)    return std::unexpected{label.error()};
+        if (!value)    return std::unexpected{value.error()};
+
+        auto type = dom::ContactChannel::type_from_string(*type_str);
+        auto ch = dom::ContactChannel::create(type, *label, *value);
+        if (!ch) return std::unexpected{ch.error()};
+        result.push_back(*std::move(ch));
+    }
+    return result;
+}
 
 auto build_contact(const json& j) -> common::Result<dom::Contact> {
     auto& personal = j["personal"];
@@ -49,7 +68,11 @@ auto build_contact(const json& j) -> common::Result<dom::Contact> {
     if (!email)    return std::unexpected{email.error()};
 
     auto phone = get_string_or(personal, "phone", "");
-    return dom::Contact::create(*name, *location, phone, *email);
+
+    auto channels = build_extra_channels(personal);
+    if (!channels) return std::unexpected{channels.error()};
+
+    return dom::Contact::create(*name, *location, phone, *email, *std::move(channels));
 }
 
 auto build_profile(const json& j) -> common::Result<dom::ProfessionalProfile> {

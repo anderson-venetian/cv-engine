@@ -66,6 +66,7 @@ add_library(cvengine-core STATIC
     src/core/domain/certification.cpp
     src/core/domain/skill_group.cpp
     src/core/domain/professional_profile.cpp
+    src/core/domain/contact_channel.cpp
     src/core/domain/theme.cpp
     src/core/domain/rendered_document.cpp
     src/core/domain/cv.cpp

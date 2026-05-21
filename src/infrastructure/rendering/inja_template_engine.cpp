@@ -16,9 +16,6 @@ namespace dom = core::domain;
 using common::ErrorCode;
 using common::make_error;
 
-// Convierte una clave dotted "typography.base_size" en escritura jerárquica
-// dentro de un JSON object: target.typography.base_size = value.
-// Las partes intermedias se crean como objects si no existen.
 auto set_nested(json& target, const std::string& dotted_key, const std::string& value) -> void {
     std::vector<std::string> parts;
     std::stringstream ss{dotted_key};
@@ -41,11 +38,26 @@ auto set_nested(json& target, const std::string& dotted_key, const std::string& 
 auto cv_to_context(const dom::Cv& cv) -> json {
     json ctx;
 
+    // Canales extra de contacto (URL ya construida en el dominio).
+    // La URL NO se escapa porque LaTeX la usa como argumento de \href,
+    // no como texto visible. El value sí se escapa (es texto visible).
+    json channels_arr = json::array();
+    for (const auto& ch : cv.contact().extra_channels()) {
+        channels_arr.push_back({
+            {"type",  std::string{dom::ContactChannel::type_to_string(ch.type())}},
+            {"label", escape_latex(ch.label())},
+            {"value", escape_latex(ch.value())},
+            {"url",   ch.url()}
+        });
+    }
+
     ctx["personal"] = {
         {"name",     escape_latex(cv.contact().name())},
         {"location", escape_latex(cv.contact().location())},
         {"phone",    escape_latex(cv.contact().phone())},
-        {"email",    escape_latex(cv.contact().email())}
+        {"email",    escape_latex(cv.contact().email())},
+        {"email_raw", cv.contact().email()},
+        {"channels", std::move(channels_arr)}
     };
 
     ctx["profile"] = escape_latex(cv.profile().text());
@@ -100,9 +112,6 @@ auto cv_to_context(const dom::Cv& cv) -> json {
     return ctx;
 }
 
-// El Theme guarda claves dotted ("typography.base_size") por elección
-// arquitectónica del dominio. Aquí las desplaño a estructura anidada
-// para que inja las acceda como theme.properties.typography.base_size.
 auto theme_to_context(const dom::Theme& theme) -> json {
     json ctx;
     ctx["name"] = theme.name();
