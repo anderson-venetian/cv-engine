@@ -4,12 +4,14 @@
 \usepackage[spanish]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern}
+\usepackage{(( theme.properties.typography.font_package ))}
 \usepackage{xcolor}
 \usepackage{enumitem}
 \usepackage{tabularx}
 \usepackage{hyperref}
 \hypersetup{colorlinks=false, pdfborder={0 0 0}}
+
+\linespread{(( theme.properties.typography.line_height ))}
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{4pt}
@@ -20,7 +22,7 @@
 \begin{document}
 
 % ===== Encabezado =====
-{\Large\bfseries (( cv.personal.name ))}
+{\(( theme.properties.typography.name_size_scale ))\bfseries (( cv.personal.name ))}
 \hfill
 {\small (( cv.personal.location )) \,|\, (( cv.personal.phone )) \,|\, (( cv.personal.email ))}
 

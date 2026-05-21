@@ -1,32 +1,32 @@
 [meta]
-name    = "minimal"
-version = "1.1.0"
+name    = "elegant"
+version = "1.0.0"
 
 [page]
 size          = "a4"
 orientation   = "portrait"
 margin_top    = "2.1cm"
 margin_bottom = "2.1cm"
-margin_left   = "2.0cm"
-margin_right  = "2.0cm"
+margin_left   = "1.9cm"
+margin_right  = "1.9cm"
 
 [typography]
 base_size       = "11pt"
-font_package    = "XCharter"
-font_family     = "Charter"
-line_height     = "1.12"
+font_package    = "mathpazo"
+font_family     = "Palatino"
+line_height     = "1.18"
 heading_weight  = "bold"
 name_size_scale = "LARGE"
 
 [colors]
 primary   = "#1a1a1a"
 secondary = "#4a4a4a"
-accent    = "#0a2540"
-divider   = "#aaaaaa"
+accent    = "#0066cc"
+divider   = "#cccccc"
 
 [dividers]
 style       = "solid"
-thickness   = "0.5pt"
+thickness   = "0.4pt"
 space_above = "4pt"
 space_below = "6pt"
 

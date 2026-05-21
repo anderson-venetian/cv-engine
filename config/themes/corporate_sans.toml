@@ -1,28 +1,28 @@
 [meta]
-name    = "minimal"
+name    = "corporate_sans"
 version = "1.1.0"
 
 [page]
 size          = "a4"
 orientation   = "portrait"
-margin_top    = "2.1cm"
-margin_bottom = "2.1cm"
-margin_left   = "2.0cm"
-margin_right  = "2.0cm"
+margin_top    = "2.3cm"
+margin_bottom = "2.3cm"
+margin_left   = "2.5cm"
+margin_right  = "2.5cm"
 
 [typography]
 base_size       = "11pt"
-font_package    = "XCharter"
-font_family     = "Charter"
-line_height     = "1.12"
+font_package    = "sourcesanspro"
+font_family     = "Source Sans Pro"
+line_height     = "1.25"
 heading_weight  = "bold"
-name_size_scale = "LARGE"
+name_size_scale = "Large"
 
 [colors]
 primary   = "#1a1a1a"
 secondary = "#4a4a4a"
-accent    = "#0a2540"
-divider   = "#aaaaaa"
+accent    = "#1a3d6b"
+divider   = "#bfbfbf"
 
 [dividers]
 style       = "solid"
