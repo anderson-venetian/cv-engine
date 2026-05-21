@@ -38,8 +38,6 @@ CPMAddPackage(
         "BUILD_BENCHMARK OFF"
 )
 
-# Marcamos los headers de inja como sistema para silenciar
-# warnings ajenos a nuestro código (Wshadow, Wconversion).
 if(TARGET inja)
     get_target_property(_inja_inc inja INTERFACE_INCLUDE_DIRECTORIES)
     if(_inja_inc)
@@ -48,7 +46,7 @@ if(TARGET inja)
     endif()
 endif()
 
-# ===== Capa core =====
+# ===== Capa core (dominio + ports + common) =====
 add_library(cvengine-core STATIC
     src/core/domain/period.cpp
     src/core/domain/contact.cpp
@@ -61,6 +59,7 @@ add_library(cvengine-core STATIC
     src/core/domain/theme.cpp
     src/core/domain/rendered_document.cpp
     src/core/domain/cv.cpp
+    src/common/executable_finder.cpp
 )
 
 target_include_directories(cvengine-core PUBLIC
@@ -83,6 +82,7 @@ add_library(cvengine-infrastructure STATIC
     src/infrastructure/rendering/inja_template_engine.cpp
     src/infrastructure/rendering/latex_renderer.cpp
     src/infrastructure/rendering/latex_escape.cpp
+    src/infrastructure/compilation/pdflatex_compiler.cpp
 )
 
 target_include_directories(cvengine-infrastructure PUBLIC

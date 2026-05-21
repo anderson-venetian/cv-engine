@@ -1,31 +1,32 @@
 #include <print>
 #include <memory>
 #include <filesystem>
-#include <fstream>
 #include <cvengine/core/ports/i_data_repository.hpp>
 #include <cvengine/core/ports/i_theme_repository.hpp>
 #include <cvengine/core/ports/i_template_engine.hpp>
 #include <cvengine/core/ports/i_renderer.hpp>
+#include <cvengine/core/ports/i_compiler.hpp>
 #include <cvengine/infrastructure/persistence/json_data_repository.hpp>
 #include <cvengine/infrastructure/persistence/toml_theme_repository.hpp>
 #include <cvengine/infrastructure/rendering/inja_template_engine.hpp>
 #include <cvengine/infrastructure/rendering/latex_renderer.hpp>
+#include <cvengine/infrastructure/compilation/pdflatex_compiler.hpp>
 
 namespace fs    = std::filesystem;
 namespace ports = cvengine::core::ports;
 namespace dom   = cvengine::core::domain;
-namespace persistence = cvengine::infrastructure::persistence;
-namespace rendering   = cvengine::infrastructure::rendering;
+namespace persistence  = cvengine::infrastructure::persistence;
+namespace rendering    = cvengine::infrastructure::rendering;
+namespace compilation  = cvengine::infrastructure::compilation;
 
 auto main() -> int {
-    std::println("cv-engine v2.0.0 — Fase 5: templating + renderer LaTeX");
+    std::println("cv-engine v2.0.0 — Fase 6: flujo end-to-end (JSON+TOML → PDF)");
 
+    // ----- Configuración de rutas -----
     auto data_dir      = fs::path{"config"} / "data";
     auto theme_dir     = fs::path{"config"} / "themes";
     auto templates_dir = fs::path{"config"} / "templates";
     auto output_dir    = fs::path{"output"};
-
-    fs::create_directories(output_dir);
 
     // ----- Composition root -----
     std::unique_ptr<ports::IDataRepository> data_repo =
@@ -40,7 +41,15 @@ auto main() -> int {
     std::unique_ptr<ports::IRenderer> renderer =
         std::make_unique<rendering::LatexRenderer>(template_engine);
 
-    // ----- Carga -----
+    std::unique_ptr<ports::ICompiler> compiler =
+        std::make_unique<compilation::PdfLatexCompiler>(
+            /* executable_path     */ "",          // autodetect en PATH
+            /* base_filename       */ "cv_pedro",
+            /* cleanup_auxiliaries */ true,
+            /* pass_count          */ 2
+        );
+
+    // ----- Fase 1: Cargar CV -----
     auto cv_r = data_repo->load("cv_pedro");
     if (!cv_r) {
         std::println("[FAIL] DataRepository: {}", cv_r.error().message);
@@ -48,45 +57,40 @@ auto main() -> int {
     }
     std::println("[OK] CV cargado: {}", cv_r->contact().name());
 
+    // ----- Fase 2: Cargar tema -----
     auto theme_r = theme_repo->load("minimal");
     if (!theme_r) {
         std::println("[FAIL] ThemeRepository: {}", theme_r.error().message);
         return 1;
     }
-    std::println("[OK] Theme cargado: {}", theme_r->name());
+    std::println("[OK] Tema cargado: {}", theme_r->name());
 
-    // ----- Render -----
+    // ----- Fase 3: Renderizar LaTeX -----
     auto doc_r = renderer->render(*cv_r, *theme_r);
     if (!doc_r) {
         std::println("[FAIL] Renderer: {}", doc_r.error().message);
         return 1;
     }
-    const auto& doc = *doc_r;
-    std::println("[OK] LaTeX renderizado: {} chars", doc.content().size());
-    std::println("[OK] Formato: {}",
-                 dom::RenderedDocument::format_extension(doc.format()));
+    std::println("[OK] LaTeX renderizado: {} chars", doc_r->content().size());
 
-    // ----- Guardar a archivo -----
-    auto output_path = output_dir / "cv_pedro.tex";
-    std::ofstream out{output_path};
-    if (!out) {
-        std::println("[FAIL] No se pudo abrir {}", output_path.string());
+    // ----- Fase 4: Compilar a PDF -----
+    std::println("[..] Compilando con pdflatex (2 pasadas)...");
+    auto pdf_r = compiler->compile(*doc_r, output_dir);
+    if (!pdf_r) {
+        std::println("[FAIL] Compiler: {}", pdf_r.error().message);
         return 1;
     }
-    out << doc.content();
-    out.close();
-    std::println("[OK] Archivo escrito: {}", output_path.string());
 
-    // ----- Vista previa de las primeras líneas -----
-    std::println("\n--- Preview (primeras 8 líneas del .tex) ---");
-    std::ifstream preview{output_path};
-    std::string line;
-    int line_count = 0;
-    while (std::getline(preview, line) && line_count < 8) {
-        std::println("{:>3} | {}", ++line_count, line);
+    std::println("[OK] PDF generado: {}", pdf_r->string());
+
+    // ----- Resumen -----
+    std::error_code ec;
+    auto size = fs::file_size(*pdf_r, ec);
+    if (!ec) {
+        std::println("[OK] Tamaño: {} bytes", size);
     }
-    std::println("--- (continúa) ---");
 
-    std::println("\n✓ Fase 5 completa. LaTeX listo para compilar a PDF en Fase 6.");
+    std::println("\n✓ Fase 6 completa. Flujo end-to-end operativo.");
+    std::println("  Para regenerar: editar config/ → ./build/debug/bin/cv-engine.exe");
     return 0;
 }
