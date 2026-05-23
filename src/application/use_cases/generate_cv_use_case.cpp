@@ -47,4 +47,11 @@ auto GenerateCvUseCase::execute(const GenerateCvRequest& request) const
     };
 }
 
+auto GenerateCvUseCase::execute_async(const GenerateCvRequest& request) const
+    -> std::future<common::Result<GenerateCvResponse>> {
+    return std::async(std::launch::async, [this, request]() {
+        return this->execute(request);
+    });
+}
+
 } // namespace cvengine::application::use_cases

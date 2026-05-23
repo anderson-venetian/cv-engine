@@ -1,6 +1,7 @@
 #include <cvengine/presentation/cli/cli_application.hpp>
 
 #include <print>
+#include <cstdio>
 #include <string>
 #include <filesystem>
 #include <CLI/CLI.hpp>
@@ -92,7 +93,23 @@ auto CliApplication::run(int argc, char** argv) const -> int {
         .output_dir      = fs::path{output_path}
     };
 
-    auto result = use_case_->execute(request);
+    auto future = use_case_->execute_async(request);
+
+    if (verbose) {
+        std::print("Compilando CV... [|]");
+        std::fflush(stdout);
+        const char spinner[] = {'|', '/', '-', '\\'};
+        int spinner_index = 1;
+        while (future.wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout) {
+            std::print("\b\b\b[{}]", spinner[spinner_index]);
+            std::fflush(stdout);
+            spinner_index = (spinner_index + 1) % 4;
+        }
+        std::print("\b\b\b   \b\b\b");
+        std::fflush(stdout);
+    }
+
+    auto result = future.get();
     if (!result) {
         std::println(stderr, "[ERROR] {}", result.error().message);
         return map_error_to_exit_code(result.error().code);

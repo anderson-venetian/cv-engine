@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <filesystem>
+#include <future>
 #include <cvengine/common/result.hpp>
 #include <cvengine/core/ports/i_data_repository.hpp>
 #include <cvengine/core/ports/i_theme_repository.hpp>
@@ -37,6 +38,10 @@ public:
 
     [[nodiscard]] auto execute(const GenerateCvRequest& request) const
         -> common::Result<GenerateCvResponse>;
+
+    // Variante asíncrona del caso de uso
+    [[nodiscard]] auto execute_async(const GenerateCvRequest& request) const
+        -> std::future<common::Result<GenerateCvResponse>>;
 
 private:
     std::shared_ptr<core::ports::IDataRepository>  data_repo_;
