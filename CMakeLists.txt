@@ -56,6 +56,13 @@ CPMAddPackage(
         "CLI11_BUILD_DOCS OFF"
 )
 
+CPMAddPackage(
+    NAME Catch2
+    GITHUB_REPOSITORY catchorg/Catch2
+    VERSION 3.4.0
+)
+
+
 # ===== Capa core (dominio + ports + common) =====
 add_library(cvengine-core STATIC
     src/core/domain/period.cpp
@@ -174,6 +181,13 @@ target_compile_options(cv-engine PRIVATE
     -Wall -Wextra -Wpedantic
     -Wshadow -Wconversion
 )
+
+# ===== Pruebas unitarias e integración =====
+option(BUILD_TESTING "Construir las pruebas unitarias" ON)
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
 
 message(STATUS "")
 message(STATUS "==== cv-engine v${PROJECT_VERSION} ====")
