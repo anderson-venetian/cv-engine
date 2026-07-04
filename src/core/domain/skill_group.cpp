@@ -10,11 +10,10 @@ auto SkillGroup::create(
     auto label_t = common::trim(label);
     auto content_t = common::trim(content);
 
-    if (label_t.empty()) {
-        return common::make_error(common::ErrorCode::EmptyRequiredField, "SkillGroup: label required");
-    }
-    if (content_t.empty()) {
-        return common::make_error(common::ErrorCode::EmptyRequiredField, "SkillGroup: content required");
+    if (auto err = common::first_error(
+            common::require_non_empty(label_t, "SkillGroup: label required"),
+            common::require_non_empty(content_t, "SkillGroup: content required"))) {
+        return std::unexpected{std::move(*err)};
     }
 
     return SkillGroup{std::string{label_t}, std::string{content_t}};

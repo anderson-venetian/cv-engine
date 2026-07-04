@@ -12,14 +12,11 @@ auto Certification::create(
     auto issuer_t = common::trim(issuer);
     auto date_t = common::trim(date);
 
-    if (name_t.empty()) {
-        return common::make_error(common::ErrorCode::EmptyRequiredField, "Certification: name required");
-    }
-    if (issuer_t.empty()) {
-        return common::make_error(common::ErrorCode::EmptyRequiredField, "Certification: issuer required");
-    }
-    if (date_t.empty()) {
-        return common::make_error(common::ErrorCode::EmptyRequiredField, "Certification: date required");
+    if (auto err = common::first_error(
+            common::require_non_empty(name_t, "Certification: name required"),
+            common::require_non_empty(issuer_t, "Certification: issuer required"),
+            common::require_non_empty(date_t, "Certification: date required"))) {
+        return std::unexpected{std::move(*err)};
     }
 
     return Certification{

@@ -14,14 +14,11 @@ auto Education::create(
     auto loc_t = common::trim(location);
     auto date_t = common::trim(completion_date);
 
-    if (deg_t.empty()) {
-        return common::make_error(common::ErrorCode::EmptyRequiredField, "Education: degree required");
-    }
-    if (ins_t.empty()) {
-        return common::make_error(common::ErrorCode::EmptyRequiredField, "Education: institution required");
-    }
-    if (date_t.empty()) {
-        return common::make_error(common::ErrorCode::EmptyRequiredField, "Education: completion date required");
+    if (auto err = common::first_error(
+            common::require_non_empty(deg_t, "Education: degree required"),
+            common::require_non_empty(ins_t, "Education: institution required"),
+            common::require_non_empty(date_t, "Education: completion date required"))) {
+        return std::unexpected{std::move(*err)};
     }
 
     return Education{

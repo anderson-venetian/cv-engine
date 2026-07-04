@@ -1,6 +1,6 @@
 #include <cvengine/infrastructure/persistence/toml_theme_repository.hpp>
+#include <cvengine/common/string_utils.hpp>
 
-#include <sstream>
 #include <toml++/toml.hpp>
 
 namespace cvengine::infrastructure::persistence {
@@ -47,18 +47,16 @@ auto TomlThemeRepository::load(std::string_view name) const
     auto path = base_directory_ / (std::string{name} + ".toml");
 
     if (!std::filesystem::exists(path)) {
-        std::ostringstream msg;
-        msg << "Theme file not found: " << path.string();
-        return make_error(ErrorCode::FileNotFound, msg.str());
+        return make_error(ErrorCode::FileNotFound,
+            common::concat("Theme file not found: ", path.string()));
     }
 
     toml::table table;
     try {
         table = toml::parse_file(path.string());
     } catch (const toml::parse_error& e) {
-        std::ostringstream msg;
-        msg << "TOML parse error: " << e.description();
-        return make_error(ErrorCode::ParseError, msg.str());
+        return make_error(ErrorCode::ParseError,
+            common::concat("TOML parse error: ", e.description()));
     }
 
     dom::Theme::PropertyMap properties;

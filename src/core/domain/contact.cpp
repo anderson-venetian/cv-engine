@@ -15,17 +15,11 @@ auto Contact::create(
     auto phone_t    = common::trim(phone);
     auto email_t    = common::trim(email);
 
-    if (name_t.empty()) {
-        return common::make_error(common::ErrorCode::EmptyRequiredField,
-            "Contact: name is required");
-    }
-    if (location_t.empty()) {
-        return common::make_error(common::ErrorCode::EmptyRequiredField,
-            "Contact: location is required");
-    }
-    if (email_t.empty()) {
-        return common::make_error(common::ErrorCode::EmptyRequiredField,
-            "Contact: email is required");
+    if (auto err = common::first_error(
+            common::require_non_empty(name_t, "Contact: name is required"),
+            common::require_non_empty(location_t, "Contact: location is required"),
+            common::require_non_empty(email_t, "Contact: email is required"))) {
+        return std::unexpected{std::move(*err)};
     }
     if (email_t.find('@') == std::string_view::npos) {
         return common::make_error(common::ErrorCode::InvalidFormat,

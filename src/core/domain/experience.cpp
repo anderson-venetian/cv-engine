@@ -14,14 +14,11 @@ auto Experience::create(
     auto org_t = common::trim(organization);
     auto loc_t = common::trim(location);
 
-    if (pos_t.empty()) {
-        return common::make_error(common::ErrorCode::EmptyRequiredField, "Experience: position required");
-    }
-    if (org_t.empty()) {
-        return common::make_error(common::ErrorCode::EmptyRequiredField, "Experience: organization required");
-    }
-    if (loc_t.empty()) {
-        return common::make_error(common::ErrorCode::EmptyRequiredField, "Experience: location required");
+    if (auto err = common::first_error(
+            common::require_non_empty(pos_t, "Experience: position required"),
+            common::require_non_empty(org_t, "Experience: organization required"),
+            common::require_non_empty(loc_t, "Experience: location required"))) {
+        return std::unexpected{std::move(*err)};
     }
     if (achievements.empty()) {
         return common::make_error(

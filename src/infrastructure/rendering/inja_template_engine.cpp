@@ -1,9 +1,9 @@
 #include <cvengine/infrastructure/rendering/inja_template_engine.hpp>
 #include <cvengine/infrastructure/rendering/latex_escape.hpp>
+#include <cvengine/common/string_utils.hpp>
 
 #include <fstream>
 #include <sstream>
-#include <vector>
 #include <inja/inja.hpp>
 #include <nlohmann/json.hpp>
 
@@ -17,12 +17,7 @@ using common::ErrorCode;
 using common::make_error;
 
 auto set_nested(json& target, const std::string& dotted_key, const std::string& value) -> void {
-    std::vector<std::string> parts;
-    std::stringstream ss{dotted_key};
-    std::string part;
-    while (std::getline(ss, part, '.')) {
-        if (!part.empty()) parts.push_back(part);
-    }
+    auto parts = common::split(dotted_key, '.');
     if (parts.empty()) return;
 
     json* current = &target;
@@ -138,16 +133,14 @@ auto InjaTemplateEngine::render(
     auto template_path = templates_directory_ / std::string{template_name};
 
     if (!std::filesystem::exists(template_path)) {
-        std::ostringstream msg;
-        msg << "Template not found: " << template_path.string();
-        return make_error(ErrorCode::FileNotFound, msg.str());
+        return make_error(ErrorCode::FileNotFound,
+            common::concat("Template not found: ", template_path.string()));
     }
 
     std::ifstream file{template_path};
     if (!file) {
-        std::ostringstream msg;
-        msg << "Cannot open template: " << template_path.string();
-        return make_error(ErrorCode::IoError, msg.str());
+        return make_error(ErrorCode::IoError,
+            common::concat("Cannot open template: ", template_path.string()));
     }
     std::stringstream buffer;
     buffer << file.rdbuf();
@@ -167,9 +160,8 @@ auto InjaTemplateEngine::render(
     try {
         return env.render(template_content, context);
     } catch (const inja::InjaError& e) {
-        std::ostringstream msg;
-        msg << "Inja render error: " << e.what();
-        return make_error(ErrorCode::RenderError, msg.str());
+        return make_error(ErrorCode::RenderError,
+            common::concat("Inja render error: ", e.what()));
     }
 }
 
