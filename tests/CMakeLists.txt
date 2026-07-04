@@ -3,6 +3,16 @@ add_executable(cvengine-tests
     unit/test_contact_channel.cpp
     unit/test_contact.cpp
     unit/test_cv.cpp
+    unit/test_achievement.cpp
+    unit/test_certification.cpp
+    unit/test_education.cpp
+    unit/test_experience.cpp
+    unit/test_professional_profile.cpp
+    unit/test_rendered_document.cpp
+    unit/test_skill_group.cpp
+    unit/test_theme.cpp
+    unit/test_latex_escape.cpp
+    unit/test_validation.cpp
 )
 
 target_link_libraries(cvengine-tests
