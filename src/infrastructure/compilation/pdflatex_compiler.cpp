@@ -31,9 +31,21 @@ auto build_command(
         << " \"" << (working_dir / tex_filename).string() << "\"";
 #ifdef _WIN32
     cmd << "\"";
-#endif
     cmd << " > NUL 2>&1";
+#else
+    cmd << " > /dev/null 2>&1";
+#endif
     return cmd.str();
+}
+
+auto read_log_tail(const fs::path& log_path, std::size_t max_chars = 500) -> std::string {
+    std::ifstream log_file{log_path};
+    if (!log_file) return {};
+
+    std::string content{std::istreambuf_iterator<char>(log_file),
+                        std::istreambuf_iterator<char>()};
+    if (content.size() <= max_chars) return content;
+    return content.substr(content.size() - max_chars);
 }
 
 auto write_tex_file(
@@ -125,12 +137,23 @@ auto PdfLatexCompiler::compile(
     auto cmd = build_command(resolved_path, output_directory, tex_filename);
     for (int pass = 1; pass <= pass_count_; ++pass) {
         int rc = std::system(cmd.c_str());
+        if (rc == -1) {
+            return make_error(
+                ErrorCode::CompilationError,
+                "Failed to launch pdflatex process (system() returned -1)"
+            );
+        }
         if (rc != 0) {
+            auto log_path = output_directory / (base_filename_ + ".log");
             std::ostringstream msg;
             msg << "pdflatex failed on pass " << pass
-                << " (exit code " << rc << "). "
-                << "See " << (output_directory / (base_filename_ + ".log")).string()
-                << " for details.";
+                << " (exit code " << rc << ").";
+            auto tail = read_log_tail(log_path);
+            if (!tail.empty()) {
+                msg << "\n--- log tail ---\n" << tail;
+            } else {
+                msg << " See " << log_path.string() << " for details.";
+            }
             return make_error(ErrorCode::CompilationError, msg.str());
         }
     }

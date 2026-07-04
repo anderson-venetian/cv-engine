@@ -87,7 +87,11 @@ auto build_skills(const json& j) -> common::Result<std::vector<dom::SkillGroup>>
         return result;
     }
     for (auto it = j["skills"].begin(); it != j["skills"].end(); ++it) {
-        if (!it.value().is_string()) continue;
+        if (!it.value().is_string()) {
+            std::ostringstream msg;
+            msg << "skills['" << it.key() << "'] must be a string";
+            return make_error(ErrorCode::InvalidFormat, msg.str());
+        }
         auto sg = dom::SkillGroup::create(it.key(), it.value().get<std::string>());
         if (!sg) return std::unexpected{sg.error()};
         result.push_back(*std::move(sg));
@@ -114,8 +118,14 @@ auto build_experience(const json& exp_json) -> common::Result<dom::Experience> {
     }
 
     std::vector<dom::Achievement> achievements;
-    for (const auto& ach_json : exp_json["achievements"]) {
-        if (!ach_json.is_string()) continue;
+    for (std::size_t i = 0; i < exp_json["achievements"].size(); ++i) {
+        const auto& ach_json = exp_json["achievements"][i];
+        if (!ach_json.is_string()) {
+            std::ostringstream msg;
+            msg << "Experience '" << *position
+                << "': achievements[" << i << "] must be a string";
+            return make_error(ErrorCode::InvalidFormat, msg.str());
+        }
         auto ach = dom::Achievement::create(ach_json.get<std::string>());
         if (!ach) return std::unexpected{ach.error()};
         achievements.push_back(*std::move(ach));

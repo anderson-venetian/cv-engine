@@ -1,6 +1,7 @@
 #include <cvengine/application/use_cases/generate_cv_use_case.hpp>
 
 #include <filesystem>
+#include <string>
 
 namespace cvengine::application::use_cases {
 
@@ -39,7 +40,10 @@ auto GenerateCvUseCase::execute(const GenerateCvRequest& request) const
     // 5. Empaquetar respuesta
     std::error_code ec;
     auto size = fs::file_size(*pdf_r, ec);
-    if (ec) size = 0;
+    if (ec) {
+        std::string msg = "Cannot determine PDF file size: " + ec.message();
+        return std::unexpected{common::Error{common::ErrorCode::IoError, msg}};
+    }
 
     return GenerateCvResponse{
         .pdf_path  = *std::move(pdf_r),
