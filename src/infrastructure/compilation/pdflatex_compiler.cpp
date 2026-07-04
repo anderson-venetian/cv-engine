@@ -1,5 +1,6 @@
 #include <cvengine/infrastructure/compilation/pdflatex_compiler.hpp>
 #include <cvengine/common/executable_finder.hpp>
+#include <cvengine/common/string_utils.hpp>
 
 #include <cstdlib>
 #include <fstream>
@@ -42,9 +43,8 @@ auto write_tex_file(
 ) -> common::Result<void> {
     std::ofstream out{path, std::ios::binary};
     if (!out) {
-        std::ostringstream msg;
-        msg << "Cannot write tex file: " << path.string();
-        return std::unexpected{common::Error{ErrorCode::IoError, msg.str()}};
+        return std::unexpected{common::Error{ErrorCode::IoError,
+            common::concat("Cannot write tex file: ", path.string())}};
     }
     out << content;
     if (!out) {
@@ -102,18 +102,16 @@ auto PdfLatexCompiler::compile(
         resolved_path = found->string();
     } else {
         if (!fs::exists(resolved_path)) {
-            std::ostringstream msg;
-            msg << "pdflatex executable does not exist: " << resolved_path;
-            return make_error(ErrorCode::CompilationError, msg.str());
+            return make_error(ErrorCode::CompilationError,
+                common::concat("pdflatex executable does not exist: ", resolved_path));
         }
     }
 
     std::error_code ec;
     fs::create_directories(output_directory, ec);
     if (ec) {
-        std::ostringstream msg;
-        msg << "Cannot create output directory: " << ec.message();
-        return make_error(ErrorCode::IoError, msg.str());
+        return make_error(ErrorCode::IoError,
+            common::concat("Cannot create output directory: ", ec.message()));
     }
 
     auto tex_filename = base_filename_ + ".tex";
@@ -126,12 +124,9 @@ auto PdfLatexCompiler::compile(
     for (int pass = 1; pass <= pass_count_; ++pass) {
         int rc = std::system(cmd.c_str());
         if (rc != 0) {
-            std::ostringstream msg;
-            msg << "pdflatex failed on pass " << pass
-                << " (exit code " << rc << "). "
-                << "See " << (output_directory / (base_filename_ + ".log")).string()
-                << " for details.";
-            return make_error(ErrorCode::CompilationError, msg.str());
+            return make_error(ErrorCode::CompilationError, common::concat(
+                "pdflatex failed on pass ", pass, " (exit code ", rc, "). See ",
+                (output_directory / (base_filename_ + ".log")).string(), " for details."));
         }
     }
 

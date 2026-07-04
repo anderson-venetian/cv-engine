@@ -8,11 +8,8 @@ auto Theme::create(
     PropertyMap properties
 ) -> common::Result<Theme> {
     auto name_t = common::trim(name);
-    if (name_t.empty()) {
-        return common::make_error(
-            common::ErrorCode::EmptyRequiredField,
-            "Theme: name is required"
-        );
+    if (auto err = common::require_non_empty(name_t, "Theme: name is required")) {
+        return std::unexpected{std::move(*err)};
     }
     if (properties.empty()) {
         return common::make_error(

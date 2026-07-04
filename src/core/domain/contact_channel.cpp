@@ -37,13 +37,10 @@ auto ContactChannel::create(
     auto label_t = common::trim(label);
     auto value_t = common::trim(value);
 
-    if (label_t.empty()) {
-        return common::make_error(common::ErrorCode::EmptyRequiredField,
-            "ContactChannel: label required");
-    }
-    if (value_t.empty()) {
-        return common::make_error(common::ErrorCode::EmptyRequiredField,
-            "ContactChannel: value required");
+    if (auto err = common::first_error(
+            common::require_non_empty(label_t, "ContactChannel: label required"),
+            common::require_non_empty(value_t, "ContactChannel: value required"))) {
+        return std::unexpected{std::move(*err)};
     }
 
     // Validacion especifica por tipo

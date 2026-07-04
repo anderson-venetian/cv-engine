@@ -1,8 +1,7 @@
 #include <cvengine/common/executable_finder.hpp>
+#include <cvengine/common/string_utils.hpp>
 
 #include <cstdlib>
-#include <sstream>
-#include <vector>
 
 namespace cvengine::common {
 
@@ -15,16 +14,6 @@ constexpr char kPathSeparator = ';';
 #else
 constexpr char kPathSeparator = ':';
 #endif
-
-auto split_path(const std::string& path_env) -> std::vector<std::string> {
-    std::vector<std::string> parts;
-    std::stringstream ss{path_env};
-    std::string item;
-    while (std::getline(ss, item, kPathSeparator)) {
-        if (!item.empty()) parts.push_back(item);
-    }
-    return parts;
-}
 
 auto try_with_extension(const fs::path& candidate) -> std::optional<fs::path> {
     if (fs::exists(candidate) && fs::is_regular_file(candidate)) {
@@ -54,7 +43,7 @@ auto find_executable(std::string_view name) -> std::optional<fs::path> {
         return std::nullopt;
     }
 
-    for (const auto& dir : split_path(path_env)) {
+    for (const auto& dir : split(path_env, kPathSeparator)) {
         auto candidate = fs::path{dir} / requested;
         if (auto found = try_with_extension(candidate)) {
             return found;

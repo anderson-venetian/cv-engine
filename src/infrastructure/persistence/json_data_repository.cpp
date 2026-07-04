@@ -1,7 +1,7 @@
 #include <cvengine/infrastructure/persistence/json_data_repository.hpp>
+#include <cvengine/common/string_utils.hpp>
 
 #include <fstream>
-#include <sstream>
 #include <vector>
 #include <nlohmann/json.hpp>
 
@@ -16,14 +16,12 @@ using common::make_error;
 
 auto get_string(const json& obj, const char* key) -> common::Result<std::string> {
     if (!obj.contains(key)) {
-        std::ostringstream msg;
-        msg << "Missing required field: " << key;
-        return make_error(ErrorCode::EmptyRequiredField, msg.str());
+        return make_error(ErrorCode::EmptyRequiredField,
+            common::concat("Missing required field: ", key));
     }
     if (!obj[key].is_string()) {
-        std::ostringstream msg;
-        msg << "Field '" << key << "' must be a string";
-        return make_error(ErrorCode::InvalidFormat, msg.str());
+        return make_error(ErrorCode::InvalidFormat,
+            common::concat("Field '", key, "' must be a string"));
     }
     return obj[key].get<std::string>();
 }
@@ -198,25 +196,22 @@ auto JsonDataRepository::load(std::string_view identifier) const
     auto path = base_directory_ / (std::string{identifier} + ".json");
 
     if (!std::filesystem::exists(path)) {
-        std::ostringstream msg;
-        msg << "File not found: " << path.string();
-        return make_error(ErrorCode::FileNotFound, msg.str());
+        return make_error(ErrorCode::FileNotFound,
+            common::concat("File not found: ", path.string()));
     }
 
     std::ifstream file{path};
     if (!file) {
-        std::ostringstream msg;
-        msg << "Cannot open file: " << path.string();
-        return make_error(ErrorCode::IoError, msg.str());
+        return make_error(ErrorCode::IoError,
+            common::concat("Cannot open file: ", path.string()));
     }
 
     json j;
     try {
         file >> j;
     } catch (const json::parse_error& e) {
-        std::ostringstream msg;
-        msg << "JSON parse error: " << e.what();
-        return make_error(ErrorCode::ParseError, msg.str());
+        return make_error(ErrorCode::ParseError,
+            common::concat("JSON parse error: ", e.what()));
     }
 
     auto contact        = build_contact(j);
