@@ -2,15 +2,15 @@
   "schema_version": "2.2",
   "language": "es",
   "personal": {
-    "name": "Pedro Espinoza Trujillo",
+    "name": "PEDRO ESPINOZA TRUJILLO",
     "location": "Lima, Perú",
-    "phone": "900 000 000",
-    "email": "contacto@example.com",
+    "phone": "917 672 598",
+    "email": "pedro.espinozat@istpargentina.edu.pe",
     "channels": [
       {
         "type": "whatsapp",
         "label": "WhatsApp",
-        "value": "51900000000"
+        "value": "51917672598"
       }
     ]
   },
