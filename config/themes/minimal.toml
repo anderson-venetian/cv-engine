@@ -5,10 +5,10 @@ version = "1.1.0"
 [page]
 size          = "a4"
 orientation   = "portrait"
-margin_top    = "2.1cm"
-margin_bottom = "2.1cm"
-margin_left   = "2.0cm"
-margin_right  = "2.0cm"
+margin_top    = "1.5cm"
+margin_bottom = "1.5cm"
+margin_left   = "1.8cm"
+margin_right  = "1.8cm"
 
 [typography]
 base_size       = "11pt"
