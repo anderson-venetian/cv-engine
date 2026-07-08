@@ -1,4 +1,5 @@
 #include <cvengine/infrastructure/persistence/json_data_repository.hpp>
+#include <cvengine/common/validation.hpp>
 
 #include <fstream>
 #include <sstream>
@@ -194,6 +195,14 @@ JsonDataRepository::JsonDataRepository(std::filesystem::path base_directory)
 
 auto JsonDataRepository::load(std::string_view identifier) const
     -> common::Result<dom::Cv> {
+
+    // Reject identifiers containing path separators or shell metacharacters
+    // to prevent path traversal (e.g. "../../etc/passwd").
+    if (!common::is_safe_identifier(identifier)) {
+        return make_error(ErrorCode::InvalidFormat,
+            "Data identifier contains invalid characters "
+            "(only alphanumeric, hyphens, underscores, dots allowed)");
+    }
 
     auto path = base_directory_ / (std::string{identifier} + ".json");
 

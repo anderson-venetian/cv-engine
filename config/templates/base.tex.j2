@@ -14,16 +14,18 @@
 \linespread{(( theme.properties.typography.line_height ))}
 
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{4pt}
-\setlist[itemize]{leftmargin=*, itemsep=2pt, topsep=2pt, parsep=0pt}
+\setlength{\parskip}{2pt}
+\setlist[itemize]{leftmargin=*, itemsep=1pt, topsep=1pt, parsep=0pt}
 
 \pagestyle{empty}
 
 \begin{document}
 
 % ===== Encabezado =====
+\begin{center}
 {\(( theme.properties.typography.name_size_scale ))\bfseries (( cv.personal.name ))}
-\hfill
+
+\vspace{2pt}
 {\small (( cv.personal.location )) \,|\,
 ## for ch in cv.personal.channels ##
 ## if ch.type == "whatsapp" ##
@@ -31,19 +33,20 @@
 ## endif ##
 ## endfor ##
  \,|\, \href{mailto:(( cv.personal.email_raw ))}{(( cv.personal.email ))}}
+\end{center}
 
-\vspace{2pt}
+\vspace{1pt}
 \rule{\textwidth}{(( theme.properties.dividers.thickness ))}
 
 % ===== Perfil profesional =====
-\vspace{6pt}
+\vspace{4pt}
 {\bfseries PERFIL PROFESIONAL}
 
 (( cv.profile ))
 
 % ===== Habilidades técnicas =====
 ## if length(cv.skills) > 0 ##
-\vspace{6pt}
+\vspace{4pt}
 {\bfseries HABILIDADES TÉCNICAS}
 
 ## for skill in cv.skills ##
@@ -52,11 +55,11 @@
 ## endif ##
 
 % ===== Experiencia profesional =====
-\vspace{6pt}
+\vspace{4pt}
 {\bfseries EXPERIENCIA PROFESIONAL}
 
 ## for exp in cv.experiences ##
-\vspace{4pt}
+\vspace{3pt}
 {\bfseries (( exp.position ))} \hfill {\small (( exp.period ))}\\
 {\small (( exp.organization )) \,|\, (( exp.location ))}
 
@@ -68,7 +71,7 @@
 ## endfor ##
 
 % ===== Educación =====
-\vspace{6pt}
+\vspace{4pt}
 {\bfseries EDUCACIÓN}
 
 ## for edu in cv.education ##
@@ -79,7 +82,7 @@
 
 % ===== Certificaciones =====
 ## if length(cv.certifications) > 0 ##
-\vspace{6pt}
+\vspace{4pt}
 {\bfseries CERTIFICACIONES}
 
 \noindent\begin{tabularx}{\textwidth}{@{}X l r@{}}

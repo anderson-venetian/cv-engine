@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <CLI/CLI.hpp>
 #include <cvengine/common/error.hpp>
+#include <cvengine/common/validation.hpp>
 
 namespace cvengine::presentation::cli {
 
@@ -77,6 +78,22 @@ auto CliApplication::run(int argc, char** argv) const -> int {
         app.parse(argc, argv);
     } catch (const CLI::ParseError& e) {
         return app.exit(e);
+    }
+
+    // Validate identifiers to prevent path traversal and command injection.
+    if (!common::is_safe_identifier(data_id)) {
+        std::println(stderr, "[ERROR] Invalid data identifier: only alphanumeric, "
+            "hyphens, underscores, and dots are allowed.");
+        return ExitCode::ConfigurationError;
+    }
+    if (!common::is_safe_identifier(theme_name)) {
+        std::println(stderr, "[ERROR] Invalid theme name: only alphanumeric, "
+            "hyphens, underscores, and dots are allowed.");
+        return ExitCode::ConfigurationError;
+    }
+    if (!common::is_shell_safe(output_path)) {
+        std::println(stderr, "[ERROR] Output path contains unsafe characters.");
+        return ExitCode::ConfigurationError;
     }
 
     if (verbose) {

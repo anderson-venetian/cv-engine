@@ -1,4 +1,5 @@
 #include <cvengine/infrastructure/persistence/toml_theme_repository.hpp>
+#include <cvengine/common/validation.hpp>
 
 #include <sstream>
 #include <toml++/toml.hpp>
@@ -43,6 +44,14 @@ TomlThemeRepository::TomlThemeRepository(std::filesystem::path base_directory)
 
 auto TomlThemeRepository::load(std::string_view name) const
     -> common::Result<dom::Theme> {
+
+    // Reject names containing path separators or shell metacharacters
+    // to prevent path traversal.
+    if (!common::is_safe_identifier(name)) {
+        return make_error(ErrorCode::InvalidFormat,
+            "Theme name contains invalid characters "
+            "(only alphanumeric, hyphens, underscores, dots allowed)");
+    }
 
     auto path = base_directory_ / (std::string{name} + ".toml");
 

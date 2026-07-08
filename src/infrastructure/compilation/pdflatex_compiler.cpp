@@ -1,5 +1,7 @@
 #include <cvengine/infrastructure/compilation/pdflatex_compiler.hpp>
 #include <cvengine/common/executable_finder.hpp>
+#include <cvengine/common/result.hpp>
+#include <cvengine/common/validation.hpp>
 
 #include <cstdlib>
 #include <fstream>
@@ -19,7 +21,22 @@ auto build_command(
     const std::string& pdflatex_path,
     const fs::path& working_dir,
     const std::string& tex_filename
-) -> std::string {
+) -> common::Result<std::string> {
+    // Validate all path components are free of shell metacharacters
+    // to prevent command injection via crafted filenames or paths.
+    if (!common::is_shell_safe(pdflatex_path)) {
+        return make_error(ErrorCode::CompilationError,
+            "pdflatex path contains unsafe characters");
+    }
+    if (!common::is_shell_safe(working_dir.string())) {
+        return make_error(ErrorCode::CompilationError,
+            "Output directory path contains unsafe characters");
+    }
+    if (!common::is_shell_safe(tex_filename)) {
+        return make_error(ErrorCode::CompilationError,
+            "TeX filename contains unsafe characters");
+    }
+
     std::ostringstream cmd;
 #ifdef _WIN32
     cmd << "\"";
@@ -32,7 +49,11 @@ auto build_command(
 #ifdef _WIN32
     cmd << "\"";
 #endif
+#ifdef _WIN32
     cmd << " > NUL 2>&1";
+#else
+    cmd << " > /dev/null 2>&1";
+#endif
     return cmd.str();
 }
 
@@ -122,7 +143,10 @@ auto PdfLatexCompiler::compile(
         return std::unexpected{r.error()};
     }
 
-    auto cmd = build_command(resolved_path, output_directory, tex_filename);
+    auto cmd_r = build_command(resolved_path, output_directory, tex_filename);
+    if (!cmd_r) return std::unexpected{cmd_r.error()};
+    auto cmd = *std::move(cmd_r);
+
     for (int pass = 1; pass <= pass_count_; ++pass) {
         int rc = std::system(cmd.c_str());
         if (rc != 0) {
